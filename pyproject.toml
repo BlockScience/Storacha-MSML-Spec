@@ -1,0 +1,13 @@
+[project]
+name = "Storacha-MSML-Spec"
+version = "0.1.0"
+description = "Storacha Mathematical Specification"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "math-spec-mapping==0.3.13",
+    "jsonschema",
+    "requests",
+    "PyGithub",
+    "python-dotenv"
+]
