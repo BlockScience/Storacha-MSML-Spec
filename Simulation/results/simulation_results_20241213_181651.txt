@@ -1,0 +1,280 @@
+Storacha Protocol Simulation Results - 2024-12-13 18:16:51
+===================================
+
+Simulation Parameters:
+---------------------
+Duration: 30 days (720 epochs)
+Network Size:
+- 100 Object Storage Nodes (1Gbps each)
+- 50 Retrieval Query Nodes
+- 20 Index Nodes
+- 10 Fisherman Nodes
+
+Session Parameters:
+- Storage: 1TB
+- Read Bandwidth: 1Gbps
+- Write Bandwidth: 100Mbps
+- Duration: 30 days
+
+Summary Statistics:
+-----------------
+Network Utilization:
+- Average: 97.38%
+- Maximum: 100.00%
+- Minimum: 90.02%
+
+Token Economics:
+- Final Circulating Supply: 26,350,987,155
+- Total Tokens Burnt: 988,577
+- Final Treasury Balance: 14,993,678
+
+Session Costs:
+- Average: $26245.06
+- Maximum: $27565.28
+- Minimum: $22587.39
+
+Node Economics:
+- Average Monthly Revenue per Node: $6099994.38
+
+Daily Metrics:
+-------------
+
+Day 1:
+- Network Utilization: 97.82%
+- Average Session Cost: $26475.67
+- Average Node Daily Revenue: $24148.07
+- Circulating Supply: 368,899
+- Burnt Tokens: 1,161
+- Treasury Balance: 73,500
+
+Day 2:
+- Network Utilization: 96.54%
+- Average Session Cost: $25714.02
+- Average Node Daily Revenue: $69039.69
+- Circulating Supply: 112,911,285
+- Burnt Tokens: 34,071
+- Treasury Balance: 2,726,307
+
+Day 3:
+- Network Utilization: 97.95%
+- Average Session Cost: $26626.80
+- Average Node Daily Revenue: $112192.57
+- Circulating Supply: 419,070,954
+- Burnt Tokens: 66,699
+- Treasury Balance: 4,660,421
+
+Day 4:
+- Network Utilization: 97.02%
+- Average Session Cost: $26214.25
+- Average Node Daily Revenue: $152245.83
+- Circulating Supply: 911,215,156
+- Burnt Tokens: 99,616
+- Treasury Balance: 6,336,854
+
+Day 5:
+- Network Utilization: 97.52%
+- Average Session Cost: $26631.72
+- Average Node Daily Revenue: $177645.92
+- Circulating Supply: 1,575,615,129
+- Burnt Tokens: 133,088
+- Treasury Balance: 7,907,849
+
+Day 6:
+- Network Utilization: 96.93%
+- Average Session Cost: $26081.49
+- Average Node Daily Revenue: $183610.22
+- Circulating Supply: 2,344,848,359
+- Burnt Tokens: 166,219
+- Treasury Balance: 9,229,597
+
+Day 7:
+- Network Utilization: 97.82%
+- Average Session Cost: $26108.75
+- Average Node Daily Revenue: $187735.76
+- Circulating Supply: 3,138,849,910
+- Burnt Tokens: 198,790
+- Treasury Balance: 10,208,248
+
+Day 8:
+- Network Utilization: 97.65%
+- Average Session Cost: $25978.52
+- Average Node Daily Revenue: $191823.74
+- Circulating Supply: 3,950,531,240
+- Burnt Tokens: 231,951
+- Treasury Balance: 11,021,766
+
+Day 9:
+- Network Utilization: 97.17%
+- Average Session Cost: $26599.12
+- Average Node Daily Revenue: $195916.21
+- Circulating Supply: 4,779,908,912
+- Burnt Tokens: 264,554
+- Treasury Balance: 11,710,695
+
+Day 10:
+- Network Utilization: 97.54%
+- Average Session Cost: $26114.64
+- Average Node Daily Revenue: $199547.78
+- Circulating Supply: 5,626,959,227
+- Burnt Tokens: 296,863
+- Treasury Balance: 12,321,664
+
+Day 11:
+- Network Utilization: 96.25%
+- Average Session Cost: $26180.70
+- Average Node Daily Revenue: $202932.01
+- Circulating Supply: 6,489,561,287
+- Burnt Tokens: 329,697
+- Treasury Balance: 12,762,731
+
+Day 12:
+- Network Utilization: 97.58%
+- Average Session Cost: $26696.60
+- Average Node Daily Revenue: $206538.28
+- Circulating Supply: 7,366,845,117
+- Burnt Tokens: 361,536
+- Treasury Balance: 13,166,073
+
+Day 13:
+- Network Utilization: 98.41%
+- Average Session Cost: $25807.92
+- Average Node Daily Revenue: $209900.13
+- Circulating Supply: 8,259,691,205
+- Burnt Tokens: 394,321
+- Treasury Balance: 13,523,819
+
+Day 14:
+- Network Utilization: 96.69%
+- Average Session Cost: $26533.14
+- Average Node Daily Revenue: $213123.37
+- Circulating Supply: 9,167,012,889
+- Burnt Tokens: 427,307
+- Treasury Balance: 13,778,005
+
+Day 15:
+- Network Utilization: 97.45%
+- Average Session Cost: $26077.23
+- Average Node Daily Revenue: $216236.55
+- Circulating Supply: 10,088,238,301
+- Burnt Tokens: 460,197
+- Treasury Balance: 13,990,921
+
+Day 16:
+- Network Utilization: 97.47%
+- Average Session Cost: $26005.44
+- Average Node Daily Revenue: $219221.84
+- Circulating Supply: 11,022,898,413
+- Burnt Tokens: 493,573
+- Treasury Balance: 14,159,441
+
+Day 17:
+- Network Utilization: 97.21%
+- Average Session Cost: $26076.21
+- Average Node Daily Revenue: $222074.35
+- Circulating Supply: 11,970,425,026
+- Burnt Tokens: 526,768
+- Treasury Balance: 14,310,777
+
+Day 18:
+- Network Utilization: 97.38%
+- Average Session Cost: $26112.51
+- Average Node Daily Revenue: $224870.05
+- Circulating Supply: 12,930,265,659
+- Burnt Tokens: 559,746
+- Treasury Balance: 14,436,700
+
+Day 19:
+- Network Utilization: 97.17%
+- Average Session Cost: $26013.81
+- Average Node Daily Revenue: $227619.13
+- Circulating Supply: 13,902,172,567
+- Burnt Tokens: 592,921
+- Treasury Balance: 14,541,470
+
+Day 20:
+- Network Utilization: 98.38%
+- Average Session Cost: $26773.37
+- Average Node Daily Revenue: $230225.01
+- Circulating Supply: 14,885,935,735
+- Burnt Tokens: 625,978
+- Treasury Balance: 14,629,286
+
+Day 21:
+- Network Utilization: 96.96%
+- Average Session Cost: $26034.53
+- Average Node Daily Revenue: $232796.40
+- Circulating Supply: 15,880,933,373
+- Burnt Tokens: 659,356
+- Treasury Balance: 14,705,701
+
+Day 22:
+- Network Utilization: 97.60%
+- Average Session Cost: $26521.03
+- Average Node Daily Revenue: $235318.69
+- Circulating Supply: 16,887,044,759
+- Burnt Tokens: 692,282
+- Treasury Balance: 14,763,724
+
+Day 23:
+- Network Utilization: 96.88%
+- Average Session Cost: $26164.76
+- Average Node Daily Revenue: $237766.59
+- Circulating Supply: 17,904,031,948
+- Burnt Tokens: 725,360
+- Treasury Balance: 14,817,757
+
+Day 24:
+- Network Utilization: 96.97%
+- Average Session Cost: $26572.35
+- Average Node Daily Revenue: $240101.89
+- Circulating Supply: 18,931,586,332
+- Burnt Tokens: 758,486
+- Treasury Balance: 14,856,780
+
+Day 25:
+- Network Utilization: 98.08%
+- Average Session Cost: $26573.38
+- Average Node Daily Revenue: $242416.22
+- Circulating Supply: 19,969,205,903
+- Burnt Tokens: 790,991
+- Treasury Balance: 14,887,175
+
+Day 26:
+- Network Utilization: 98.71%
+- Average Session Cost: $26254.82
+- Average Node Daily Revenue: $244691.86
+- Circulating Supply: 21,016,827,356
+- Burnt Tokens: 823,667
+- Treasury Balance: 14,911,419
+
+Day 27:
+- Network Utilization: 97.19%
+- Average Session Cost: $26558.57
+- Average Node Daily Revenue: $246905.52
+- Circulating Supply: 22,074,265,722
+- Burnt Tokens: 857,724
+- Treasury Balance: 14,936,602
+
+Day 28:
+- Network Utilization: 96.70%
+- Average Session Cost: $25895.10
+- Average Node Daily Revenue: $249055.94
+- Circulating Supply: 23,141,257,224
+- Burnt Tokens: 890,712
+- Treasury Balance: 14,957,190
+
+Day 29:
+- Network Utilization: 96.34%
+- Average Session Cost: $26062.05
+- Average Node Daily Revenue: $251149.25
+- Circulating Supply: 24,217,524,478
+- Burnt Tokens: 923,697
+- Treasury Balance: 14,973,064
+
+Day 30:
+- Network Utilization: 98.06%
+- Average Session Cost: $25893.42
+- Average Node Daily Revenue: $253145.51
+- Circulating Supply: 25,302,826,039
+- Burnt Tokens: 956,544
+- Treasury Balance: 14,984,581
