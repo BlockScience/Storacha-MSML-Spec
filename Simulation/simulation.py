@@ -6,6 +6,8 @@ from enum import Enum
 import logging
 import os
 from datetime import datetime
+import multiprocessing as mp
+from functools import partial
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -396,7 +398,109 @@ class LongTermSimulation:
             'min_stake_per_node': [],
             'customer_price_per_gb': []
         }
+        # Reduce frequency of metrics collection
+        self.metrics_collection_interval = 24  # Collect daily instead of hourly
 
+    def run_simulation(self):
+        """Run 10-year simulation with aggressive optimization"""
+        # Reduce to daily epochs instead of 4-hour epochs
+        epochs_per_year = 365  # One epoch per day
+        total_epochs = self.network_params.years * epochs_per_year
+
+        # Pre-allocate arrays
+        network_utils = np.zeros(total_epochs // self.metrics_collection_interval)
+        token_prices = np.zeros_like(network_utils)
+        
+        start_time = datetime.now()
+        last_progress_time = start_time
+        
+        # Precalculate some values
+        required_nodes_cache = {
+            year: self.calculate_required_nodes(year)
+            for year in np.linspace(0, self.network_params.years, 21)  # Sample 20 points
+        }
+        
+        for epoch in range(total_epochs):
+            current_year = epoch / epochs_per_year
+            
+            # Update network size and run epoch only when needed
+            if epoch % self.metrics_collection_interval == 0:
+                idx = epoch // self.metrics_collection_interval
+                
+                # Interpolate required nodes from cache
+                year_key = round(current_year * 2) / 2  # Round to nearest 0.5
+                required_nodes = required_nodes_cache.get(year_key, 
+                    required_nodes_cache[min(required_nodes_cache.keys(), 
+                        key=lambda x: abs(x - year_key))])
+                
+                self._adjust_network_size(required_nodes)
+                
+                # Batch process metrics
+                network_utils[idx] = self.system.calculate_network_utilization()
+                token_prices[idx] = self.calculate_token_price(current_year)
+                
+                # Update metrics in batch
+                self._update_metrics_batch(epoch, current_year, token_prices[idx])
+            
+            # Simulate multiple epochs at once
+            for _ in range(24):  # Simulate a full day at once
+                self.system.simulate_epoch()
+            
+            # Show progress every minute
+            current_time = datetime.now()
+            if (current_time - last_progress_time).total_seconds() > 60:
+                elapsed_time = (current_time - start_time).total_seconds()
+                progress = epoch / total_epochs
+                estimated_total_time = elapsed_time / progress if progress > 0 else 0
+                remaining_time = estimated_total_time - elapsed_time
+                
+                logger.info(f"Progress: {progress:.1%} - Estimated time remaining: {remaining_time/60:.1f} minutes")
+                last_progress_time = current_time
+            
+            # Log progress less frequently
+            if epoch % (epochs_per_year // 12) == 0:  # Monthly updates
+                logger.info(f"Simulating Year {current_year:.1f}")
+
+        return self.metrics_history
+
+    def _update_metrics_batch(self, epoch: int, year: float, token_price: float):
+        """Update metrics in batch with minimal calculations"""
+        total_nodes = sum(len(nodes) for nodes in self.system.nodes.values())
+        if total_nodes == 0:
+            return
+            
+        # Use numpy for faster calculations
+        nodes_list = [node for nodes in self.system.nodes.values() for node in nodes]
+        rewards = np.array([node.rewards for node in nodes_list])
+        stakes = np.array([node.stake for node in nodes_list])
+        
+        # Update metrics in batch
+        self.metrics_history['epoch'].append(epoch)
+        self.metrics_history['year'].append(year)
+        self.metrics_history['network_capacity_tbps'].append(
+            len(self.system.nodes[NodeType.RAN.name]) * self.network_params.node_capacity_gbps / 1000)
+        self.metrics_history['storage_capacity_eb'].append(
+            len(self.system.nodes[NodeType.OSN.name]) * self.network_params.node_storage_tb / 1e6)
+        self.metrics_history['utilization_rate'].append(self.system.calculate_network_utilization())
+        self.metrics_history['token_price_usd'].append(token_price)
+        self.metrics_history['total_nodes'].append(total_nodes)
+        self.metrics_history['tokens_staked'].append(np.sum(stakes))
+        self.metrics_history['tokens_circulating'].append(self.system.circulating_supply)
+        self.metrics_history['tokens_issued'].append(
+            self.system.circulating_supply + self.system.burnt_tokens)
+        
+        # Simplified calculations
+        self.metrics_history['customer_revenue'].append(self.system.calculate_network_fees())
+        self.metrics_history['foundation_fees'].append(self.system.treasury_balance)
+        self.metrics_history['node_profitability'].append(np.mean(rewards) * token_price)
+        self.metrics_history['min_stake_per_node'].append(self.system.get_min_stake(NodeType.OSN))
+        self.metrics_history['customer_price_per_gb'].append(
+            self.system.calculate_session_cost(SessionParameters(
+                storage_load_bytes=1e9, read_rate_bps=1e6,
+                write_rate_bps=1e5, duration_seconds=30*24*3600,
+                request_frequency=1.0, collateral=1000
+            )))
+    
     def calculate_required_nodes(self, current_year: float) -> dict:
         """Calculate required nodes based on target capacity and growth curve"""
         # Use sigmoid growth curve to model network expansion
@@ -431,31 +535,6 @@ class LongTermSimulation:
         
         return self.economic_params.base_token_price_usd * cycle_factor * growth_trend
 
-    def run_simulation(self):
-        """Run 10-year simulation"""
-        epochs_per_year = 8760  # Hourly epochs for a year
-        total_epochs = self.network_params.years * epochs_per_year
-
-        for epoch in range(total_epochs):
-            current_year = epoch / epochs_per_year
-            
-            # Update network size based on growth targets
-            required_nodes = self.calculate_required_nodes(current_year)
-            self._adjust_network_size(required_nodes)
-            
-            # Update economic parameters
-            token_price = self.calculate_token_price(current_year)
-            self._update_metrics(epoch, current_year, token_price)
-            
-            # Run system epoch
-            self.system.simulate_epoch()
-            
-            # Log progress every month
-            if epoch % (epochs_per_year // 12) == 0:
-                logger.info(f"Simulating Year {current_year:.1f}")
-
-        return self.metrics_history
-
     def _adjust_network_size(self, required_nodes: dict):
         """Adjust network size to match growth targets"""
         for node_type, required_count in required_nodes.items():
@@ -468,48 +547,11 @@ class LongTermSimulation:
                     self.system.add_node(node_type, stake=min_stake * 1.5)
             # Note: We don't remove nodes if we have too many
 
-    def _update_metrics(self, epoch: int, year: float, token_price: float):
-        """Update simulation metrics"""
-        total_nodes = sum(len(nodes) for nodes in self.system.nodes.values())
-        total_staked = sum(node.stake for nodes in self.system.nodes.values() for node in nodes)
-        
-        self.metrics_history['epoch'].append(epoch)
-        self.metrics_history['year'].append(year)
-        self.metrics_history['network_capacity_tbps'].append(
-            len(self.system.nodes[NodeType.RAN.name]) * self.network_params.node_capacity_gbps / 1000)
-        self.metrics_history['storage_capacity_eb'].append(
-            len(self.system.nodes[NodeType.OSN.name]) * self.network_params.node_storage_tb / 1e6)
-        self.metrics_history['utilization_rate'].append(self.system.calculate_network_utilization())
-        self.metrics_history['token_price_usd'].append(token_price)
-        self.metrics_history['total_nodes'].append(total_nodes)
-        self.metrics_history['tokens_staked'].append(total_staked)
-        self.metrics_history['tokens_circulating'].append(self.system.circulating_supply)
-        self.metrics_history['tokens_issued'].append(
-            self.system.circulating_supply + self.system.burnt_tokens)
-        self.metrics_history['customer_revenue'].append(
-            sum(self.system.calculate_network_fees() for _ in range(24)))  # Daily fees
-        self.metrics_history['foundation_fees'].append(self.system.treasury_balance)
-        
-        # Calculate average node profitability
-        avg_rewards = sum(node.rewards 
-                         for nodes in self.system.nodes.values() 
-                         for node in nodes) / max(1, total_nodes)
-        self.metrics_history['node_profitability'].append(avg_rewards * token_price)
-        
-        # Track minimum stake requirements
-        self.metrics_history['min_stake_per_node'].append(
-            self.system.get_min_stake(NodeType.OSN))
-        
-        # Track customer pricing
-        self.metrics_history['customer_price_per_gb'].append(
-            self.system.calculate_session_cost(SessionParameters(
-                storage_load_bytes=1e9,  # 1GB
-                read_rate_bps=1e6,      # 1Mbps
-                write_rate_bps=1e5,     # 100Kbps
-                duration_seconds=30*24*3600,  # 30 days
-                request_frequency=1.0,
-                collateral=1000
-            )))
+def run_parallel_simulation(params):
+    """Run a single simulation scenario in parallel"""
+    network_params, economic_params, scenario_name = params
+    sim = LongTermSimulation(network_params, economic_params)
+    return scenario_name, sim.run_simulation()
 
 def run_simulation_example():
     # Initialize the system
@@ -817,29 +859,22 @@ def run_foundation_accumulation_simulation():
     return sim.run_simulation()
 
 if __name__ == "__main__":
-    # Run short-term simulation for testing
-    metrics = run_simulation_example()
-    write_results_to_file(metrics)
+    # Run only essential scenarios in parallel
+    scenarios = [
+        ("base_case", NetworkGrowthParameters(), EconomicParameters()),
+        ("high_growth", NetworkGrowthParameters(target_capacity_tbps=200.0, target_storage_eb=2.0),
+         EconomicParameters(inflation_rate=0.15, customer_growth_rate=0.7)),
+        ("conservative", NetworkGrowthParameters(target_capacity_tbps=50.0, target_storage_eb=0.5),
+         EconomicParameters(inflation_rate=0.05, customer_growth_rate=0.3))
+    ]
     
-    # Run long-term simulations
-    logger.info("Running inflation scenarios...")
-    inflation_results = run_inflation_simulation()
-    write_long_term_results(inflation_results, "inflation")
+    # Run scenarios in parallel with reduced number of scenarios
+    with mp.Pool(processes=min(mp.cpu_count(), len(scenarios))) as pool:
+        results = pool.map(run_parallel_simulation, 
+                         [(n, e, name) for name, n, e in scenarios])
     
-    logger.info("Running network growth simulation...")
-    growth_results = run_network_growth_simulation()
-    write_long_term_results(growth_results, "network_growth")
-    
-    logger.info("Running profitability simulation...")
-    profitability_results = run_profitability_simulation()
-    write_long_term_results(profitability_results, "profitability")
-    
-    logger.info("Running customer revenue simulation...")
-    revenue_results = run_customer_revenue_simulation()
-    write_long_term_results(revenue_results, "customer_revenue")
-    
-    logger.info("Running foundation accumulation simulation...")
-    foundation_results = run_foundation_accumulation_simulation()
-    write_long_term_results(foundation_results, "foundation")
+    # Process and write results
+    all_results = dict(results)
+    write_long_term_results(all_results, "all_scenarios")
     
     logger.info("All simulations completed. Results written to Simulation/results/")
