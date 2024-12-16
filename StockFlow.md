@@ -1,115 +1,89 @@
 ```mermaid
 flowchart TB
-%% Define styles
-classDef default fill:#f9f9f9,stroke:#333,stroke-width:2px
-classDef pool fill:#e1f5fe,stroke:#0288d1
-classDef system fill:#f3e5f5,stroke:#7b1fa2
+    %% Define styles
+    classDef stock fill:#fff,stroke:#333,stroke-width:4px
+    classDef cloud fill:#f5f5f5,stroke:#999,stroke-width:2px
+    classDef valve fill:#fff,stroke:#333,stroke-width:2px
+    classDef control fill:#fff,stroke:#666,stroke-width:1px,stroke-dasharray: 5 5
+    classDef note fill:#ffd,stroke:#da3,stroke-width:1px
 
-%% Initial Token Allocation (Static Stocks)
-subgraph TokenAllocation["Initial Token Allocation - 100B Total"]
-    direction LR
-    InitialContributors["Initial Contributors<br/>20%"]
-    EarlyBackers["Early Backers<br/>17%"]
-    RAndD["R&D<br/>20%"]
-    EcoSystem["Ecosystem Fund & RetroPGF<br/>20%"]
-    NetworkGrowthPool["Network Growth<br/>23%"]:::pool
-end
-
-%% Core Token Stocks
-subgraph CoreTokens["Core Token Stocks"]
-    direction LR
-    Treasury["Treasury"]:::pool
-    StakedTokens["Staked Tokens"]:::pool
-    CirculatingTokens["Circulating Tokens"]:::pool
-    BurntTokens["Burnt Tokens"]:::pool
-end
-
-%% Supply Side Participants
-subgraph SupplyParticipants["Network Participants"]
-    subgraph DirectSupply["Direct Supply Side"]
-        direction TB
-        OSN["Object Storage Nodes"]
-        RAN["Retrieval Acceleration Nodes"]
-        IN["Indexing Nodes"]
-        FN["Fisherman Nodes"]
+    %% Legend
+    subgraph Legend["Legend"]
+        L_Stock["Token Stock"]:::stock
+        L_Source((("Source/Sink"))):::cloud
+        L_Flow{{"Flow Rate"}}
+        L_Control(["Control Variable"]):::control
+        L_Note["Note/Abstraction"]:::note
+        L_TokenFlow["Token Flow"] --> L_Flow
+        L_InfoFlow["Information Flow"] -.-> L_Flow
     end
 
-    subgraph IndirectSupply["Indirect Supply Side"]
-        DSN["Durable Storage Nodes<br/>(Filecoin SP)"]
-    end
-end
+    %% Sources and Sinks
+    InitialSupply(((" "))):::cloud
+    BurnSink(((" "))):::cloud
 
-%% Service Layer
-subgraph ServiceLayer["Service Layer"]
-    direction LR
-    Customers["Customers/Businesses"]
-    EndUsers["End Users"]
-    ServiceFees["Service Fees Pool"]:::pool
-    ReputationSystem["Reputation System"]:::system
-end
+    %% Stocks (represented as rectangles with thicker borders)
+    Treasury["Treasury Pool"]:::stock
+    StakedTokens["Staked Tokens Pool"]:::stock
+    ServiceFees["Service Fees Pool<br/>(USD-denominated)"]:::stock
+    CirculatingSupply["Circulating Supply"]:::stock
+    UnvestedTokens["Unvested Tokens"]:::stock
+    FishermanRewards["Fisherman Rewards"]:::stock
 
-%% Session Management
-subgraph SessionManagement["Session Management"]
-    direction TB
-    subgraph SessionPricing["Session Pricing"]
-        StorageLoad["Storage Load<br/>Bytes"]
-        ReadRate["Read Rate<br/>Bytes/Sec"]
-        WriteRate["Write Rate<br/>Bytes/Sec"]
-        Duration["Session Duration"]
-        Frequency["Request Frequency"]
-    end
+    %% Control Variables (ovals with dashed borders)
+    NetworkState(["Network State"]):::control
+    MinStake(["Minimum Stake<br/>Requirements"]):::control
+    ServiceQuality(["Service Quality<br/>Metrics"]):::control
+    PriceParams(["Price Adjustment<br/>Parameters"]):::control
+    VestingSchedule(["Vesting<br/>Schedule"]):::control
+    KPIs(["Node KPIs:<br/>- Bytes stored<br/>- Bytes read<br/>- Indices served"]):::control
 
-    subgraph CollateralSystem["Collateral Management"]
-        SessionCollateral["Session Collateral"]
-        UnderestimationFees["Underestimation Fees"]
-    end
-end
+    %% Flows (represented as diamonds)
+    BaseMint{{"base mint"}}
+    KPIMint{{"KPI mint"}}
+    Vest{{"vest"}}
+    StakeUnstake{{"(un)stake"}}
+    Distribute{{"distribute"}}
+    Burn{{"burn"}}
+    Slash{{"slash"}}
+    Convert{{"convert"}}
 
-%% Token Economics Controls
-subgraph TokenEconomics["Token Economic Controls"]
-    direction LR
-    InflationControl["Inflation Control"]
-    StakeRequirements["Dynamic Stake Requirements"]
-    PriceAdjustment["Price Adjustment"]
-end
+    %% Notes
+    ServiceAllocation["Service fee allocation:<br/>- Provider rewards<br/>- Treasury allocation<br/>- Burn rate"]:::note
+    StakeNote["Stake requirements<br/>determined by:<br/>- Node type<br/>- Network state<br/>- Service quality"]:::note
+    MintNote["Minting combines:<br/>- Base (time-decay)<br/>- KPI-based rewards"]:::note
 
-%% Flows and Connections
-%% Network Growth Distribution
-NetworkGrowthPool -->|"KPI-Based Rewards"| DirectSupply
+    %% Connections
+    InitialSupply --> BaseMint
+    InitialSupply --> KPIMint
+    KPIs -.-> KPIMint
+    BaseMint --> UnvestedTokens
+    KPIMint --> UnvestedTokens
+    UnvestedTokens --> |"vesting rate"| Vest
+    VestingSchedule -.-> Vest
+    Vest --> CirculatingSupply
 
-%% Service Provider Interactions
-OSN <-->|"Underlying Data"| DSN
-OSN -->|"Storage Services"| Customers
-RAN -->|"Retrieval Services"| Customers
-IN -->|"Index Services"| RAN
-FN -->|"Random Verification"| DirectSupply
+    CirculatingSupply --> StakeUnstake
+    StakeUnstake --> StakedTokens
+    MinStake -.-> StakeUnstake
+    NetworkState -.-> MinStake
+    ServiceQuality -.-> MinStake
 
-%% Reputation and Performance
-DirectSupply -->|"Performance Metrics"| ReputationSystem
-ReputationSystem -->|"Traffic Routing"| RAN
+    ServiceFees --> Convert
+    Convert --> Distribute
+    Distribute --> Treasury
+    Distribute --> CirculatingSupply
+    PriceParams -.-> ServiceFees
 
-%% Staking and Security
-DirectSupply -->|"Required Stake"| StakedTokens
-StakedTokens -->|"Slashing"| Treasury
-StakedTokens -->|"Slash Reward"| FN
+    StakedTokens --> Slash
+    Slash --> Treasury
+    Slash --> FishermanRewards
 
-%% Payment Flows
-Customers -->|"Session Fees"| ServiceFees
-ServiceFees -->|"Treasury Share"| Treasury
-ServiceFees -->|"Provider Share"| DirectSupply
-ServiceFees -->|"Burn Rate"| BurntTokens
+    CirculatingSupply --> Burn
+    Burn --> BurnSink
 
-%% Session and Pricing
-SessionPricing -->|"Price Calculation"| ServiceFees
-Customers -->|"Lock Collateral"| SessionCollateral
-SessionCollateral -->|"Draw Fees"| UnderestimationFees
-
-%% User Journey
-Customers -->|"Services"| EndUsers
-EndUsers -->|"Usage Logs"| DirectSupply
-
-%% Token State Changes
-CirculatingTokens ---|"Staking"| StakedTokens
-StakedTokens ---|"Unstaking"| CirculatingTokens
-CirculatingTokens ---|"Burning"| BurntTokens
+    %% Positioning
+    ServiceAllocation --> Distribute
+    StakeNote --> StakeUnstake
+    MintNote --> BaseMint
 ```
